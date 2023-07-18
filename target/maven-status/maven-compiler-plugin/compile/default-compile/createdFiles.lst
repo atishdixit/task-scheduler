@@ -1,0 +1,11 @@
+com\task\sche\model\TaskDetail.class
+com\task\sche\tasks\ReadTask.class
+com\task\sche\config\AppConfig.class
+com\task\sche\tasks\WriteTask.class
+com\task\sche\repository\TaskRepository.class
+com\task\sche\model\TaskDetail$TaskDetailBuilder.class
+com\task\sche\controller\TaskController.class
+com\task\sche\TasksSchedulerApplication.class
+com\task\sche\tasks\Task.class
+com\task\sche\service\TaskService.class
+com\task\sche\model\TimeType.class
