@@ -9,17 +9,10 @@ import org.springframework.stereotype.Component;
 public class TaskFactory {
 
     public Task getTask(TaskName taskName){
-        Task task = null;
-    switch (taskName){
-        case MIGRATE_DATA:
-            task = new MigrateDataTask();
-            break;
-        case CLEAN_UP:
-            task = new CleanUpDataTask();
-            break;
+        return switch (taskName){
+            case MIGRATE_DATA-> new MigrateDataTask();
+            case CLEAN_UP-> new CleanUpDataTask();
+            default -> throw new IllegalArgumentException("Unknown type");
+        };
     }
-        return task;
-    }
-
-
 }
