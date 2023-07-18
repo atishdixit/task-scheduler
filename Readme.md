@@ -1,4 +1,4 @@
-## Add jobs
+## Add new job in task scheduler
 ### Request
 ```
 POST http://localhost:8080/job
