@@ -2,6 +2,7 @@ package com.task.sche.service;
 
 import com.task.sche.model.JobsDetails;
 import com.task.sche.model.ScheduleType;
+import com.task.sche.model.Status;
 import com.task.sche.repository.JobRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.task.sche.tasks.factory.TaskFactory;
+import com.task.sche.utils.Utils;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,42 +45,22 @@ public class JobService {
         () -> {
           JobsDetails JobsDetails = jobRepository.findById(taskId).orElse(null);
           if (JobsDetails != null && !JobsDetails.isExecuted()) {
-
+            LocalDateTime started = LocalDateTime.now();
             taskFactory.getTask(JobsDetails.getTask()).execute();
-
+            LocalDateTime completed = LocalDateTime.now();
             log.info(TASK_PROCESSED_LOG, JobsDetails.getCreatedAt(), JobsDetails.getDescription());
-            calculateExecutionTimeAndLatency(JobsDetails);
+            JobsDetails.setLatency(Utils.calculateExecutionTime(JobsDetails));
             JobsDetails.setExecuted(true);
+            JobsDetails.setExecutedAt(started);
+            JobsDetails.setFinishedAt(completed);
+            JobsDetails.setStatus(Status.PASSED);
             jobRepository.save(JobsDetails);
           }
         });
   }
 
-
-
-  private static void calculateExecutionTimeAndLatency(JobsDetails JobsDetails) {
-    JobsDetails.setExecutedAt(LocalDateTime.now());
-    LocalDateTime currentTime = LocalDateTime.now();
-    long latencyInSeconds;
-
-    if (ScheduleType.EXACT_TIME.equals(JobsDetails.getScheduleType())) {
-      Duration diff = Duration.between(JobsDetails.getExactTime(), currentTime);
-      latencyInSeconds = diff.getSeconds();
-    } else {
-      Duration diff = Duration.between(JobsDetails.getCreatedAt(), currentTime);
-      long elapsedSeconds = diff.getSeconds();
-
-      if (ScheduleType.MINUTES.equals(JobsDetails.getScheduleType())) {
-        latencyInSeconds = elapsedSeconds - (JobsDetails.getTime() * 60);
-      } else {
-        latencyInSeconds = elapsedSeconds - JobsDetails.getTime();
-      }
-    }
-
-    JobsDetails.setLatency(latencyInSeconds);
-  }
-
   public JobsDetails scheduleTask(JobsDetails JobsDetails) {
+    JobsDetails.setStatus(Status.WAITING);
     JobsDetails savedTask = jobRepository.save(JobsDetails);
     long delay = calculateDelay(JobsDetails);
     executorService.schedule(() -> handleScheduledTask(JobsDetails), delay, TimeUnit.SECONDS);

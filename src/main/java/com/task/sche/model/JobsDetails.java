@@ -34,6 +34,11 @@ public class JobsDetails {
 
   private LocalDateTime executedAt;
 
+  private LocalDateTime finishedAt;
+
+  @Enumerated(EnumType.STRING)
+  private Status status;
+
   @Column(name = "latency_seconds")
   private long latency;
 
